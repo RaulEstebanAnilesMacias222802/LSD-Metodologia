@@ -1,12 +1,14 @@
-# 🚀 Punto de Inicio - LSD-Metodologia
+# LSD-Metodologia
 
-¡Bienvenido! Este archivo te guiará sobre cómo comenzar con tu parte del proyecto.
+El objetivo de la actividad es identificar y eliminar desperdicios así como reparar bugs. En cada uno de los módulos se encuentra la descripción general de cómo debe funcionar el módulo, así como realizar las indicaciones del project manager (*PM*) para la auditoría del módulo asignado.
+
+Nota: En el marco de LSD, un desperdicio es cualquier elemento, proceso o código que no aporta valor al usuario final y añade complejidad al mantenimiento.
 
 ---
 
 ## ¿Cuál es mi equipo?
 
-Cada equipo es responsable de un módulo específico dentro de la plataforma Amazonas. Consulta la tabla a continuación para identificar tu equipo y rama correspondiente:
+Cada equipo es responsable de un módulo específico dentro de la plataforma "*Amazonas*". Consulta la tabla a continuación para identificar tu equipo y rama correspondiente:
 
 | Equipo | Módulo | Rama GitHub | README |
 |--------|--------|-------------|--------|
@@ -22,16 +24,16 @@ Cada equipo es responsable de un módulo específico dentro de la plataforma Ama
 
 ---
 
-## 📋 Pasos para Comenzar
+## Pasos para Comenzar
 
-### 1️⃣ Clonar el Repositorio (si aún no lo has hecho)
+### 1. Clonar el Repositorio (si aún no lo has hecho)
 
 ```bash
-git clone https://github.com/tu-usuario/LSD-Metodologia.git
+git clone https://github.com/RaulEstebanAnilesMacias222802/LSD-Metodologia.git
 cd LSD-Metodologia
 ```
 
-### 2️⃣ Cambiar a tu Rama de Equipo
+### 2. Cambiar a tu Rama de Equipo
 
 Reemplaza `equipo-X-modulo` con tu rama correspondiente:
 
@@ -40,7 +42,7 @@ Reemplaza `equipo-X-modulo` con tu rama correspondiente:
 git checkout equipo-1-usuarios
 ```
 
-### 3️⃣ Leer las Indicaciones de tu Módulo
+### 3. Leer las Indicaciones de tu Módulo
 
 Una vez en tu rama, abre el archivo README correspondiente a tu módulo en la carpeta `readme/`:
 
@@ -54,7 +56,7 @@ Una vez en tu rama, abre el archivo README correspondiente a tu módulo en la ca
 - **Equipo 9:** Lee [readme/envios.md](readme/envios.md)
 - **Equipo 10:** Lee [readme/resenas.md](readme/resenas.md)
 
-### 4️⃣ Instalar y Ejecutar el Proyecto
+### 4. Instalar y Ejecutar el Proyecto
 
 En el README de tu módulo encontrarás instrucciones detalladas para:
 
@@ -62,20 +64,19 @@ En el README de tu módulo encontrarás instrucciones detalladas para:
 2. **Iniciar el servidor** - Cómo ejecutar la API
 3. **Acceder a la documentación** - Cómo probar los endpoints
 
-### 5️⃣ Identificar y Resolver los Bugs
+### 5. Identificar y Resolver los Bugs
 
 En el README de tu módulo hay una sección llamada **"Revisión del PM"** que lista los problemas que debes encontrar y resolver.
 
 ---
 
-## 📁 Estructura del Proyecto
+## Estructura del Proyecto
 
 ```
 LSD-Metodologia/
 ├── main.py                    # Archivo principal de FastAPI
 ├── requirements.txt           # Dependencias del proyecto
-├── README.md                  # Documentación general (oculta info de bugs)
-├── INICIO.md                  # Este archivo
+├── README.md                  # Documentación general
 ├── routers/                   # Módulos de la aplicación
 │   ├── usuarios.py
 │   ├── catalogo.py
@@ -100,7 +101,7 @@ LSD-Metodologia/
 
 ---
 
-## 🛠️ Requisitos Técnicos
+## Requisitos Técnicos
 
 - **Python 3.8 o superior**
 - **pip** (gestor de paquetes)
@@ -108,31 +109,10 @@ LSD-Metodologia/
 
 ---
 
-## 💡 Consejos Útiles
+## Consejos Útiles
 
 **Lee tu README completo** - Contiene información crucial sobre tu módulo  
 **Usa la documentación interactiva** - Accede a `http://127.0.0.1:8000/docs` para probar endpoints  
 **Trabaja con tu equipo** - Comunica tus hallazgos y colabora en las soluciones  
 **Haz commits regulares** - Guarda tu progreso en la rama de tu equipo  
-
----
-
-## ❓ Preguntas Frecuentes
-
-**¿Puedo ver el código de otros equipos?**  
-Sí, puedes ver los archivos en las ramas de otros equipos, pero tu enfoque principal debe ser resolver los problemas de tu propio módulo.
-
-**¿Qué sucede si encuentro un bug en otro módulo?**  
-Reporta el hallazgo, pero mantén tu trabajo enfocado en tu módulo asignado.
-
-**¿Debo instalar las dependencias cada vez que cambio de rama?**  
-No necesariamente, pero es recomendable ejecutar `pip install -r requirements.txt` para asegurar que todo está correctamente instalado.
-
----
-
-## ✨ ¡Buen Trabajo!
-
-Ahora que sabes cómo comenzar, dirígete a tu rama de equipo y sigue las indicaciones en el README de tu módulo.
-
-**¿Listo? ¡Vamos!** 🚀
 
