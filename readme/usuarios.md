@@ -25,7 +25,7 @@ Evaluar el flujo de creación y mantenimiento de cuentas. Asegurar que las regla
 
 1. **Navegar al proyecto:**
    ```bash
-   cd "LSD-Actividad"
+   cd "LSD-Metodologia"
    ```
 
 2. **Crear y activar el entorno virtual:**

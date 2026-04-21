@@ -25,7 +25,7 @@ Analizar la experiencia de búsqueda del cliente. Necesitamos que los límites d
 
 1. **Navegar al proyecto:**
    ```bash
-   cd "LSD-Actividad"
+   cd "LSD-Metodologia"
    ```
 
 2. **Crear y activar el entorno virtual:**

@@ -25,7 +25,7 @@ Revisar la fluidez y seguridad con la que el cliente interactúa con su orden. E
 
 1. **Navegar al proyecto:**
    ```bash
-   cd "LSD-Actividad"
+   cd "LSD-Metodologia"
    ```
 
 2. **Crear y activar el entorno virtual:**

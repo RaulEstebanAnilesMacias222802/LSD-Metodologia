@@ -25,7 +25,7 @@ Auditar la transición del carrito al pedido formal. Asegurar que las transicion
 
 1. **Navegar al proyecto:**
    ```bash
-   cd "LSD-Actividad"
+   cd "LSD-Metodologia"
    ```
 
 2. **Crear y activar el entorno virtual:**

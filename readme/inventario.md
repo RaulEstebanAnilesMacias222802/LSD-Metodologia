@@ -25,7 +25,7 @@ Garantizar que las políticas de stock del sistema reflejen la realidad del alma
 
 1. **Navegar al proyecto:**
    ```bash
-   cd "LSD-Actividad"
+   cd "LSD-Metodologia"
    ```
 
 2. **Crear y activar el entorno virtual:**

@@ -25,7 +25,7 @@ Asegurar que el sistema respete estrictamente los tiempos reales de las campaña
 
 1. **Navegar al proyecto:**
    ```bash
-   cd "LSD-Actividad"
+   cd "LSD-Metodologia"
    ```
 
 2. **Crear y activar el entorno virtual:**
