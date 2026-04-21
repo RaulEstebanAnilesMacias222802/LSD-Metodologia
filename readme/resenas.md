@@ -1,4 +1,4 @@
-# Equipo 10 - Módulo de Reseñas
+# Equipo 9 - Módulo de Reseñas
 
 ## Descripción del Módulo
 
