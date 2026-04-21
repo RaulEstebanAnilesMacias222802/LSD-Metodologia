@@ -16,9 +16,9 @@ Cada equipo es responsable de un módulo específico dentro de la plataforma Ama
 | **Equipo 4** | Carrito | `equipo-4-carrito` | [carrito.md](readme/carrito.md) |
 | **Equipo 5** | Pedidos | `equipo-5-pedidos` | [pedidos.md](readme/pedidos.md) |
 | **Equipo 6** | Promociones | `equipo-6-promociones` | [promociones.md](readme/promociones.md) |
-| **Equipo 8** | Pagos | `equipo-8-pagos` | [pagos.md](readme/pagos.md) |
-| **Equipo 9** | Envíos | `equipo-9-envios` | [envios.md](readme/envios.md) |
-| **Equipo 10** | Reseñas | `equipo-10-resenas` | [resenas.md](readme/resenas.md) |
+| **Equipo 7** | Pagos | `equipo-7-pagos` | [pagos.md](readme/pagos.md) |
+| **Equipo 8** | Envíos | `equipo-8-envios` | [envios.md](readme/envios.md) |
+| **Equipo 9** | Reseñas | `equipo-9-resenas` | [resenas.md](readme/resenas.md) |
 
 ---
 
