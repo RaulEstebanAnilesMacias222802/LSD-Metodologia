@@ -1,4 +1,4 @@
-# Equipo 8 - Módulo de Pagos
+# Equipo 7 - Módulo de Pagos
 
 ## Descripción del Módulo
 
