@@ -1,4 +1,4 @@
-# Equipo 8 - Módulo de Envíos
+# Equipo 9 - Módulo de Envíos
 
 ## Descripción del Módulo
 
@@ -25,7 +25,7 @@ Evaluar la correcta aplicación de nuestras políticas de entrega. Comprobar que
 
 1. **Navegar al proyecto:**
    ```bash
-   cd "LSD-Actividad"
+   cd "LSD-Metodologia"
    ```
 
 2. **Crear y activar el entorno virtual:**

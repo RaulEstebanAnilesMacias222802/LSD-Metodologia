@@ -1,4 +1,4 @@
-# Equipo 7 - Módulo de Pagos
+# Equipo 8 - Módulo de Pagos
 
 ## Descripción del Módulo
 
@@ -25,7 +25,7 @@ Agilizar la experiencia de cobro. Validar que las transacciones aprobadas corres
 
 1. **Navegar al proyecto:**
    ```bash
-   cd "LSD-Actividad"
+   cd "LSD-Metodologia"
    ```
 
 2. **Crear y activar el entorno virtual:**
