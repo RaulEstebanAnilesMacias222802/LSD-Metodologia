@@ -35,10 +35,6 @@ cd LSD-Actividad
 
 Reemplaza `equipo-X-modulo` con tu rama correspondiente:
 
-```bash
-git checkout equipo-1-usuarios
-```
-
 **Ejemplo para Equipo 1 (Usuarios):**
 ```bash
 git checkout equipo-1-usuarios
@@ -54,9 +50,9 @@ Una vez en tu rama, abre el archivo README correspondiente a tu módulo en la ca
 - **Equipo 4:** Lee [readme/carrito.md](readme/carrito.md)
 - **Equipo 5:** Lee [readme/pedidos.md](readme/pedidos.md)
 - **Equipo 6:** Lee [readme/promociones.md](readme/promociones.md)
-- **Equipo 8:** Lee [readme/pagos.md](readme/pagos.md)
-- **Equipo 9:** Lee [readme/envios.md](readme/envios.md)
-- **Equipo 10:** Lee [readme/resenas.md](readme/resenas.md)
+- **Equipo 7:** Lee [readme/pagos.md](readme/pagos.md)
+- **Equipo 8:** Lee [readme/envios.md](readme/envios.md)
+- **Equipo 9:** Lee [readme/resenas.md](readme/resenas.md)
 
 ### 4️⃣ Instalar y Ejecutar el Proyecto
 
