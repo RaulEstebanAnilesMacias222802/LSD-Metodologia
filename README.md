@@ -1,4 +1,4 @@
-# 🚀 Punto de Inicio - LSD-Actividad
+# 🚀 Punto de Inicio - LSD-Metodologia
 
 ¡Bienvenido! Este archivo te guiará sobre cómo comenzar con tu parte del proyecto.
 
@@ -27,8 +27,8 @@ Cada equipo es responsable de un módulo específico dentro de la plataforma Ama
 ### 1️⃣ Clonar el Repositorio (si aún no lo has hecho)
 
 ```bash
-git clone https://github.com/tu-usuario/LSD-Actividad.git
-cd LSD-Actividad
+git clone https://github.com/tu-usuario/LSD-Metodologia.git
+cd LSD-Metodologia
 ```
 
 ### 2️⃣ Cambiar a tu Rama de Equipo
@@ -71,7 +71,7 @@ En el README de tu módulo hay una sección llamada **"Revisión del PM"** que l
 ## 📁 Estructura del Proyecto
 
 ```
-LSD-Actividad/
+LSD-Metodologia/
 ├── main.py                    # Archivo principal de FastAPI
 ├── requirements.txt           # Dependencias del proyecto
 ├── README.md                  # Documentación general (oculta info de bugs)
