@@ -1,6 +1,8 @@
 # LSD-Metodologia
 
-El objetivo de la actividad es identificar y eliminar desperdicios así como reparar bugs. En cada uno de los módulos se encuentra la descripción general de cómo debe funcionar el módulo, así como realizar las indicaciones del project manager (*PM*) para la auditoría del módulo asignado.
+El objetivo de la actividad es identificar y eliminar desperdicios así como reparar bugs. En cada uno de los módulos se encuentra la descripción general de cómo debe funcionar el módulo, así como realizar las indicaciones del project manager (*PM*) para la auditoría del módulo asignado (*TO-DO / Misión del Equipo*).
+
+Registro de métricas por equipo en google sheets: [Enlace](https://docs.google.com/spreadsheets/d/19jsudENN9si2xRXA2xMRey_ENPdcLJGKedNo_68VFOE/edit?usp=sharing)
 
 Nota: En el marco de LSD, un desperdicio es cualquier elemento, proceso o código que no aporta valor al usuario final y añade complejidad al mantenimiento.
 
@@ -10,17 +12,17 @@ Nota: En el marco de LSD, un desperdicio es cualquier elemento, proceso o códig
 
 Cada equipo es responsable de un módulo específico dentro de la plataforma "*Amazonas*". Consulta la tabla a continuación para identificar tu equipo y rama correspondiente:
 
-| Equipo | Módulo | Rama GitHub | README |
-|--------|--------|-------------|--------|
-| **Equipo 1** | Usuarios | `equipo-1-usuarios` | [usuarios.md](readme/usuarios.md) |
-| **Equipo 2** | Catálogo | `equipo-2-catalogo` | [catalogo.md](readme/catalogo.md) |
-| **Equipo 3** | Inventario | `equipo-3-inventario` | [inventario.md](readme/inventario.md) |
-| **Equipo 4** | Carrito | `equipo-4-carrito` | [carrito.md](readme/carrito.md) |
-| **Equipo 5** | Pedidos | `equipo-5-pedidos` | [pedidos.md](readme/pedidos.md) |
-| **Equipo 6** | Promociones | `equipo-6-promociones` | [promociones.md](readme/promociones.md) |
-| **Equipo 8** | Pagos | `equipo-8-pagos` | [pagos.md](readme/pagos.md) |
-| **Equipo 9** | Envíos | `equipo-9-envios` | [envios.md](readme/envios.md) |
-| **Equipo 10** | Reseñas | `equipo-10-resenas` | [resenas.md](readme/resenas.md) |
+| Equipo | Integrante | Módulo | Rama GitHub | README |
+|--------|------------|--------|-------------|--------|
+| **Equipo 1** | **Jesus Alejandro** | Usuarios | `equipo-1-usuarios` | [usuarios.md](readme/usuarios.md) |
+| **Equipo 2** | **Jennifer** | Catálogo | `equipo-2-catalogo` | [catalogo.md](readme/catalogo.md) |
+| **Equipo 3** | **Jesus Andre** | Inventario | `equipo-3-inventario` | [inventario.md](readme/inventario.md) |
+| **Equipo 4** | **Alan Alejandro** | Carrito | `equipo-4-carrito` | [carrito.md](readme/carrito.md) |
+| **Equipo 5** | **Edwin** | Pedidos | `equipo-5-pedidos` | [pedidos.md](readme/pedidos.md) |
+| **Equipo 6** | **Ubaldo** | Promociones | `equipo-6-promociones` | [promociones.md](readme/promociones.md) |
+| **Equipo 8** | **Villedo** | Pagos | `equipo-8-pagos` | [pagos.md](readme/pagos.md) |
+| **Equipo 9** | **Gabriel** | Envíos | `equipo-9-envios` | [envios.md](readme/envios.md) |
+| **Equipo 10** | **Marcos** | Reseñas | `equipo-10-resenas` | [resenas.md](readme/resenas.md) |
 
 ---
 
