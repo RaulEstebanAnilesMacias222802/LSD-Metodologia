@@ -19,17 +19,23 @@ la experiencia del cliente.
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-import hashlib
-import time
+from datetime import datetime
 
 router = APIRouter()
 
 pagos_db = []
 
+# Simulación de órdenes (para validar el monto real)
+ordenes_db = {
+    1: 500.0,
+    2: 1200.0,
+    3: 250.0
+}
+
 class PagoRequest(BaseModel):
     order_id: int
     tarjeta_numero: str
-    tarjeta_expiracion: str
+    tarjeta_expiracion: str  # formato MM/YY
     monto_pagado: float
 
 class VerificacionResponse(BaseModel):
@@ -37,39 +43,41 @@ class VerificacionResponse(BaseModel):
     mensaje: str
 
 
-# Se elimino la validacion:
-# Ya que la pasarela de pagos externa ya hace la validacion
-# def validar_luhn(numero: str) -> bool:
+def tarjeta_vigente(expiracion: str) -> bool:
+    """
+    Verifica si la tarjeta no está vencida usando el año actual.
+    """
+    try:
+        mes, anio = expiracion.split("/")
+        mes = int(mes)
+        anio = int("20" + anio)
 
+        ahora = datetime.now()
+        return (anio > ahora.year) or (anio == ahora.year and mes >= ahora.month)
+    except:
+        return False
 
-# Se elimino la verificacion antifraude:
-# Ya que la pasarela externa ya maneja antifraude
-# def verificar_antifraude():
 
 @router.post("/pagos/procesar")
 def procesar_pago(pago: PagoRequest):
+    
     if pago.order_id not in ordenes_db:
         raise HTTPException(status_code=404, detail="Orden no encontrada")
 
     monto_esperado = ordenes_db[pago.order_id]
 
-    # 🔴 2. VALIDAR MONTO EXACTO
     if pago.monto_pagado != monto_esperado:
         raise HTTPException(
             status_code=400,
             detail=f"Monto incorrecto. Esperado: {monto_esperado}"
         )
 
-    # 🔴 3. VALIDAR EXPIRACIÓN REAL
     if not tarjeta_vigente(pago.tarjeta_expiracion):
         raise HTTPException(
             status_code=400,
             detail="Tarjeta vencida"
         )
 
-    # ✅ SIN LUHN (eliminado)
-    # ✅ SIN ANTIFRAUDE (eliminado)
-    # ✅ SIN HASHLIB (eliminado)
 
     aprobado = True
 
@@ -88,12 +96,12 @@ def procesar_pago(pago: PagoRequest):
         "orden": pago_registro
     }
 
+
 @router.get("/pagos/reembolsos")
 def reembolsos():
     """
-    Endpoint de reembolsos pendiente de implementación.
-    Comportamiento:
-        actualmente definido como placeholder sin lógica de negocio.
+    Devuelve pagos que podrían ser reembolsados.
     """
-    
-    pass
+    return {
+        "reembolsos_disponibles": pagos_db
+    }
