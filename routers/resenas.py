@@ -29,35 +29,46 @@ resenas_db = [
         "usuario_id": 1,
         "producto_id": 1,
         "estrellas": 5,
-        "comentario": "Excelente producto, superó mis expectativas"
+        "comentario": "Excelente producto, superó mis expectativas",
+        "upvotes": 0,
+        "downvotes": 0
     },
     {
         "resena_id": 2,
         "usuario_id": 2,
         "producto_id": 1,
         "estrellas": 4,
-        "comentario": "Muy bueno, llegó en buen estado"
+        "comentario": "Muy bueno, llegó en buen estado",
+        "upvotes": 0,
+        "downvotes": 0
     },
     {
         "resena_id": 3,
         "usuario_id": 3,
         "producto_id": 2,
         "estrellas": 3,
-        "comentario": "Cumple, pero podría mejorar la calidad"
+        "comentario": "Cumple, pero podría mejorar la calidad",
+        "upvotes": 0,
+        "downvotes": 0
     },
     {
         "resena_id": 4,
         "usuario_id": 104,
         "producto_id": 3,
         "estrellas": 5,
-        "comentario": "Increíble relación calidad-precio"
+        "comentario": "Increíble relación calidad-precio",
+        "upvotes": 0,
+        "downvotes": 0
+
     },
     {
         "resena_id": 5,
         "usuario_id": 105,
         "producto_id": 3,
         "estrellas": 2,
-        "comentario": "No me gustó, esperaba algo mejor"
+        "comentario": "No me gustó, esperaba algo mejor",
+        "upvotes": 0,
+        "downvotes": 0
     }
 ]
 
@@ -127,7 +138,13 @@ def _upvote_resena(resena_id: int):
     Parámetros:
         resena_id: identificador de reseña.
     """
-    pass
+    for resena in resenas_db:
+        if resena["resena_id"] == resena_id:
+            if resena.get("upvotes", 0) >= 1 or resena.get("downvotes", 0) >= 1:
+                raise HTTPException(status_code=400, detail="No se puede volver a votar")
+            resena["upvotes"] = resena.get("upvotes", 0) + 1
+            return resena
+    raise HTTPException(status_code=404, detail="Reseña no encontrada")
 
 
 def _downvote_resena(resena_id: int):
@@ -136,7 +153,13 @@ def _downvote_resena(resena_id: int):
     Parámetros:
         resena_id: identificador de reseña.
     """
-    pass
+    for resena in resenas_db:
+        if resena["resena_id"] == resena_id:
+            if resena.get("upvotes", 0) >= 1 or resena.get("downvotes", 0) >= 1:
+                raise HTTPException(status_code=400, detail="No se puede volver a votar")
+            resena["downvotes"] = resena.get("downvotes", 0) + 1
+            return resena
+    raise HTTPException(status_code=404, detail="Reseña no encontrada")
 
 
 def _calcular_reputacion_usuario(usuario_id: int):
@@ -173,7 +196,9 @@ def crear_resena(data: ResenaCreate):
         "usuario_id": data.usuario_id,
         "producto_id": data.producto_id,
         "estrellas": data.estrellas,
-        "comentario": comentario
+        "comentario": comentario,
+        "upvotes": 0,
+        "downvotes": 0
     }
     resenas_db.append(resena)
     return resena
@@ -207,16 +232,52 @@ def promedio_producto(producto_id: int):
     """
     reseñas = [r for r in resenas_db if r["producto_id"] == producto_id]
     total_estrellas = sum(r["estrellas"] for r in reseñas)
-    promedio = total_estrellas / len(reseñas) if reseñas else 0
+    promedio = total_estrellas / 10 if reseñas else 0
     return {"producto_id": producto_id, "promedio": promedio, "cantidad": len(reseñas)}
 
 
-@router.get("/resenas/mas_vendidos")
-def productos_mas_vendidos():
+@router.post("/{resena_id}/upvote")
+def upvote_resena(resena_id: int):
     """
-    Devuelve los productos más vendidos.
+    Agrega un voto positivo a una reseña.
+    Parámetros:
+        resena_id: identificador de reseña.
+    """
+    resena = _upvote_resena(resena_id)
+    return {
+        "mensaje": "Upvote registrado",
+        "resena_id": resena_id,
+        "upvotes": resena.get("upvotes", 0),
+        "downvotes": resena.get("downvotes", 0)
+    }
+
+
+@router.post("/{resena_id}/downvote")
+def downvote_resena(resena_id: int):
+    """
+    Agrega un voto negativo a una reseña.
+    Parámetros:
+        resena_id: identificador de reseña.
+    """
+    resena = _downvote_resena(resena_id)
+    return {
+        "mensaje": "Downvote registrado",
+        "resena_id": resena_id,
+        "upvotes": resena.get("upvotes", 0),
+        "downvotes": resena.get("downvotes", 0)
+    }
+
+
+@router.get("/reportes/mas_vendidos")
+def reporte_productos_mas_vendidos():
+    """
+    Devuelve un reporte de los productos más vendidos.
     Comportamiento:
-        ordena ventas y retorna los primeros cinco registros.
+        ordena ventas de mayor a menor y retorna los primeros cinco registros.
     """
-    ordenados = sorted(ventas_db, key=lambda x: x["vendidos"])
-    return ordenados[:5]
+    ordenados = sorted(ventas_db, key=lambda x: x["vendidos"], reverse=True)
+    return {
+        "reporte": "mas_vendidos",
+        "total_productos": len(ordenados[:5]),
+        "productos": ordenados[:5]
+    }
