@@ -23,7 +23,43 @@ import re
 
 router = APIRouter()
 
-resenas_db = []
+resenas_db = [
+    {
+        "resena_id": 1,
+        "usuario_id": 1,
+        "producto_id": 1,
+        "estrellas": 5,
+        "comentario": "Excelente producto, superó mis expectativas"
+    },
+    {
+        "resena_id": 2,
+        "usuario_id": 2,
+        "producto_id": 1,
+        "estrellas": 4,
+        "comentario": "Muy bueno, llegó en buen estado"
+    },
+    {
+        "resena_id": 3,
+        "usuario_id": 3,
+        "producto_id": 2,
+        "estrellas": 3,
+        "comentario": "Cumple, pero podría mejorar la calidad"
+    },
+    {
+        "resena_id": 4,
+        "usuario_id": 104,
+        "producto_id": 3,
+        "estrellas": 5,
+        "comentario": "Increíble relación calidad-precio"
+    },
+    {
+        "resena_id": 5,
+        "usuario_id": 105,
+        "producto_id": 3,
+        "estrellas": 2,
+        "comentario": "No me gustó, esperaba algo mejor"
+    }
+]
 
 ventas_db = [
     {"producto_id": 1, "vendidos": 15},
@@ -37,6 +73,21 @@ class ResenaCreate(BaseModel):
     producto_id: int
     estrellas: int
     comentario: str
+
+
+def _usuario_ya_reseno_producto(usuario_id: int, producto_id: int) -> bool:
+    """
+    Verifica si un usuario ya dejó una reseña para un producto.
+    Parámetros:
+        usuario_id: identificador del usuario.
+        producto_id: identificador del producto.
+    Retorna:
+        True si ya existe una reseña previa para ese par usuario/producto.
+    """
+    return any(
+        resena["usuario_id"] == usuario_id and resena["producto_id"] == producto_id
+        for resena in resenas_db
+    )
 
 
 def generar_reporte_html(resenas: list):
@@ -104,7 +155,19 @@ def crear_resena(data: ResenaCreate):
     Parámetros:
         data: información del usuario, producto, calificación y comentario.
     """
+    if data.estrellas < 1 or data.estrellas > 5:
+        raise HTTPException(status_code=400, detail="La calificación debe estar entre 1 y 5 estrellas")
+
+    if _usuario_ya_reseno_producto(data.usuario_id, data.producto_id):
+        raise HTTPException(
+            status_code=409,
+            detail="El usuario ya dejó una reseña para este producto"
+        )
+
     comentario = re.sub(r"\s+", " ", data.comentario).strip()
+    if not comentario:
+        raise HTTPException(status_code=400, detail="El comentario no puede estar vacío")
+
     resena = {
         "resena_id": len(resenas_db) + 1,
         "usuario_id": data.usuario_id,
@@ -114,6 +177,23 @@ def crear_resena(data: ResenaCreate):
     }
     resenas_db.append(resena)
     return resena
+
+
+@router.get("/resenas/producto/{producto_id}")
+def obtener_resenas_producto(producto_id: int):
+    """
+    Obtiene las reseñas registradas para un producto.
+    Parámetros:
+        producto_id: identificador del producto.
+    Retorna:
+        listado de reseñas asociadas al producto y su cantidad.
+    """
+    resenas_producto = [r for r in resenas_db if r["producto_id"] == producto_id]
+    return {
+        "producto_id": producto_id,
+        "cantidad": len(resenas_producto),
+        "resenas": resenas_producto
+    }
 
 
 @router.get("/resenas/producto/{producto_id}/promedio")
@@ -127,7 +207,7 @@ def promedio_producto(producto_id: int):
     """
     reseñas = [r for r in resenas_db if r["producto_id"] == producto_id]
     total_estrellas = sum(r["estrellas"] for r in reseñas)
-    promedio = total_estrellas / 10 if reseñas else 0
+    promedio = total_estrellas / len(reseñas) if reseñas else 0
     return {"producto_id": producto_id, "promedio": promedio, "cantidad": len(reseñas)}
 
 
