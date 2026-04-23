@@ -19,7 +19,6 @@ código de programas de lealtad rechazados o generadores masivos no utilizados.
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import List, Optional
-from datetime import date
 import random
 
 router = APIRouter()
@@ -110,10 +109,9 @@ def cupones_activos():
     """
     Lista los cupones activos.
     Retorna:
-        cupones cuya campaña ya inició (fecha_inicio <= hoy) y aún no ha expirado (fecha_fin >= hoy).
+        todos los cupones cuya fecha de expiración es posterior o igual a 2024-01-01.
     """
-    hoy = date.today().isoformat()
-    return [c for c in cupones_db if c["fecha_inicio"] <= hoy <= c["fecha_fin"]]
+    return [c for c in cupones_db if c["fecha_fin"] >= "2024-01-01"]
 
 
 @router.get("/cupones/vigentes")
