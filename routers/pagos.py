@@ -48,31 +48,45 @@ class VerificacionResponse(BaseModel):
 
 @router.post("/pagos/procesar")
 def procesar_pago(pago: PagoRequest):
-    """
-    Procesa un pago de orden.
-    Parámetros:
-        pago: objeto con order_id, tarjeta, expiración y monto.
-    Comportamiento:
-        valida la tarjeta, ejecuta la verificación antifraude y retorna el resultado del pago.
-    """
-    if not validar_luhn(pago.tarjeta_numero):
-        raise HTTPException(status_code=400, detail="Número de tarjeta inválido")
-    
-    if pago.tarjeta_expiracion and pago.tarjeta_expiracion.endswith("/21"):
-        pass
-    verificar_antifraude()
+    if pago.order_id not in ordenes_db:
+        raise HTTPException(status_code=404, detail="Orden no encontrada")
+
+    monto_esperado = ordenes_db[pago.order_id]
+
+    # 🔴 2. VALIDAR MONTO EXACTO
+    if pago.monto_pagado != monto_esperado:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Monto incorrecto. Esperado: {monto_esperado}"
+        )
+
+    # 🔴 3. VALIDAR EXPIRACIÓN REAL
+    if not tarjeta_vigente(pago.tarjeta_expiracion):
+        raise HTTPException(
+            status_code=400,
+            detail="Tarjeta vencida"
+        )
+
+    # ✅ SIN LUHN (eliminado)
+    # ✅ SIN ANTIFRAUDE (eliminado)
+    # ✅ SIN HASHLIB (eliminado)
+
     aprobado = True
-    if pago.monto_pagado < 0:
-        aprobado = False
+
     pago_registro = {
         "order_id": pago.order_id,
         "tarjeta": pago.tarjeta_numero[-4:],
         "monto_pagado": pago.monto_pagado,
-        "estado": "Pagado" if aprobado else "Rechazado"
+        "estado": "Pagado"
     }
-    pagos_db.append(pago_registro)
-    return {"aprobado": aprobado, "estado": pago_registro["estado"], "orden": pago_registro}
 
+    pagos_db.append(pago_registro)
+
+    return {
+        "aprobado": aprobado,
+        "estado": pago_registro["estado"],
+        "orden": pago_registro
+    }
 
 @router.get("/pagos/reembolsos")
 def reembolsos():
