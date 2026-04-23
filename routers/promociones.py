@@ -19,6 +19,7 @@ código de programas de lealtad rechazados o generadores masivos no utilizados.
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import List, Optional
+from datetime import datetime
 import random
 
 router = APIRouter()
@@ -140,3 +141,144 @@ def validar_cupon(data: ValidarCupon):
         pass
     resultado = validar_cupon_interno(cupon, data.usuario_id, data.subtotal)
     return resultado
+
+
+# ──────────────────────────────────────────────
+# Sistema de Puntos de Lealtad (en memoria)
+# ──────────────────────────────────────────────
+
+puntos_db: dict = {}          # usuario_id → puntos acumulados
+historial_puntos: list = []   # registro de movimientos
+
+PUNTOS_POR_PESO = 1        # 1 punto por cada peso gastado
+VALOR_PUNTO     = 0.10     # cada punto vale $0.10 MXN al canjear
+
+
+class AplicarDescuento(BaseModel):
+    usuario_id: int
+    subtotal: float
+    codigo_cupon: Optional[str] = None
+
+
+class CanjearPuntos(BaseModel):
+    usuario_id: int
+    puntos_a_canjear: int
+
+
+# ── Tarea #12 ─────────────────────────────────
+@router.post("/aplicar_descuento")
+def aplicar_descuento(data: AplicarDescuento):
+    """
+    Aplica un cupón (si se proporciona) y calcula los puntos ganados por la compra.
+    Parámetros:
+        data: objeto con usuario_id, subtotal y código de cupón opcional.
+    Retorna:
+        total_final, descuento_aplicado y puntos_ganados.
+    """
+    total = data.subtotal
+    descuento = 0.0
+    cupon_aplicado = None
+
+    if data.codigo_cupon:
+        cupon = next(
+            (c for c in cupones_db if c["codigo"] == data.codigo_cupon), None
+        )
+        if cupon:
+            hoy = datetime.now().strftime("%Y-%m-%d")
+
+            if hoy < cupon["fecha_inicio"]:
+                raise HTTPException(
+                    status_code=400,
+                    detail="El cupón aún no está vigente"
+                )
+            if hoy > cupon["fecha_fin"]:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Cupón expirado"
+                )
+
+            if cupon["tipo"] == "fijo":
+                descuento = cupon["valor"]
+            elif cupon["tipo"] == "porcentaje":
+                descuento = data.subtotal * (cupon["valor"] / 100.0)
+            elif cupon["tipo"] == "2x1":
+                descuento = data.subtotal / 2
+
+            total = max(0.0, data.subtotal - descuento)
+            cupon_aplicado = cupon["codigo"]
+
+    # Sumar puntos ganados por esta compra
+    puntos_ganados = int(total * PUNTOS_POR_PESO)
+    puntos_db[data.usuario_id] = puntos_db.get(data.usuario_id, 0) + puntos_ganados
+    historial_puntos.append({
+        "usuario_id": data.usuario_id,
+        "tipo": "ganado",
+        "puntos": puntos_ganados,
+        "fecha": datetime.now().strftime("%Y-%m-%d")
+    })
+
+    return {
+        "total_final": round(total, 2),
+        "descuento_aplicado": round(descuento, 2),
+        "cupon_usado": cupon_aplicado,
+        "puntos_ganados": puntos_ganados
+    }
+
+
+# ── Tarea #13 ─────────────────────────────────
+@router.get("/puntos/{usuario_id}")
+def obtener_puntos(usuario_id: int):
+    """
+    Consulta los puntos acumulados de un usuario y su historial.
+    Parámetros:
+        usuario_id: identificador del cliente.
+    Retorna:
+        puntos_acumulados e historial de movimientos.
+    """
+    puntos = puntos_db.get(usuario_id, 0)
+    historial = [h for h in historial_puntos if h["usuario_id"] == usuario_id]
+
+    return {
+        "usuario_id": usuario_id,
+        "puntos_acumulados": puntos,
+        "historial": historial
+    }
+
+
+# ── Tarea #14 ─────────────────────────────────
+@router.post("/canjear_puntos")
+def canjear_puntos(data: CanjearPuntos):
+    """
+    Canjea puntos de un usuario por un descuento en pesos.
+    Parámetros:
+        data: objeto con usuario_id y puntos_a_canjear.
+    Retorna:
+        descuento_obtenido en pesos y puntos_restantes.
+    """
+    saldo = puntos_db.get(data.usuario_id, 0)
+
+    if data.puntos_a_canjear <= 0:
+        raise HTTPException(
+            status_code=400,
+            detail="La cantidad de puntos a canjear debe ser mayor a 0"
+        )
+    if data.puntos_a_canjear > saldo:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Puntos insuficientes. Saldo actual: {saldo}"
+        )
+
+    descuento = round(data.puntos_a_canjear * VALOR_PUNTO, 2)
+    puntos_db[data.usuario_id] = saldo - data.puntos_a_canjear
+
+    historial_puntos.append({
+        "usuario_id": data.usuario_id,
+        "tipo": "canjeado",
+        "puntos": -data.puntos_a_canjear,
+        "fecha": datetime.now().strftime("%Y-%m-%d")
+    })
+
+    return {
+        "descuento_obtenido": descuento,
+        "puntos_restantes": puntos_db[data.usuario_id]
+    }
