@@ -90,20 +90,6 @@ def buscar_producto(q: str):
     return {"query": q, "resultados": resultados, "precio_promedio": promedio}
 
 
-@router.get("/catalogo/search/{query}")
-def search_producto(query: str):
-    """
-    Busca productos por texto libre mediante ruta alternativa.
-    Parámetros:
-        query: término de búsqueda.
-    Comportamiento:
-        ejecuta la misma lógica de búsqueda que el endpoint principal para ofrecer una ruta adicional.
-    """
-    resultados = [p for p in productos_db if query.lower() in p["nombre"].lower() or query.lower() in p["descripcion"].lower()]
-    promedio = float(np.mean([p["precio"] for p in resultados])) if resultados else 0.0
-    return {"query": query, "resultados": resultados, "precio_promedio": promedio}
-
-
 @router.get("/catalogo/productos/{producto_id}")
 def obtener_producto(producto_id: int):
     """
@@ -116,7 +102,6 @@ def obtener_producto(producto_id: int):
     producto = next((p for p in productos_db if p["id"] == producto_id), None)
     if not producto:
         raise HTTPException(status_code=404, detail="Producto no encontrado")
-    generar_metadatos_seo(producto)
     return producto
 
 
