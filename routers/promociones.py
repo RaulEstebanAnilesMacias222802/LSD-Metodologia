@@ -19,6 +19,7 @@ código de programas de lealtad rechazados o generadores masivos no utilizados.
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import List, Optional
+from datetime import date
 import random
 
 router = APIRouter()
@@ -31,50 +32,12 @@ cupones_db = [
 
 usos_cupones = []
 
-"""
-# Puntos de Lealtad
-# Esta sección describe el sistema de puntos de lealtad que se pretendía implementar.
-# Cada compra genera puntos, los puntos se acumulan y pueden canjearse por descuentos.
-# Se pensó en niveles Bronze, Silver, Gold y Platinum.
-# Los puntos se calcularían según el valor de la compra y la frecuencia.
-# Había reglas especiales para compras durante fechas de campaña.
-# Los clientes frecuentes recibían bonos adicionales.
-# Existía una propuesta para sumar puntos por reseñas y referidos.
-# El sistema debía tener tablas de rewards, milestones y badge.
-# También se consideró gamificar con misiones y logros.
-# Se hablaba de integrar con una app móvil.
-# Cada punto tendría fecha de expiración a los 12 meses.
-# El backend tendría endpoints para consultar saldo, histórico y canjes.
-# Se planteó un cron job para expirar puntos caducados.
-# Se dejó pendiente la auditoría de puntos para evitar fraude.
-# El cálculo de puntos sería parte del flujo de checkout.
-# Se pretendía que el frontend mostrara estadísticas de puntos.
-# El equipo dejó la implementación pendiente por falta de alcance.
-# Se iba a usar Redis para caché de puntos y consultas en tiempo real.
-# También se habló de recompensas extra en fechas especiales.
-# Y se pensó en una integración con partners externos.
-# El sistema tenía un diseño de tablas normalizadas.
-# Se usó el término "lealtad" para el branding interno.
-# Los puntos se podrían canjear por tarjetas de regalo.
-# La idea era tener un panel de administración de puntos.
-# Se comentaron las reglas de acumulación y canje en detalle.
-# El sistema de puntos nunca llegó a desarrollarse.
-# Fin del bloque de puntos de lealtad comentado.
-"""
 
 class ValidarCupon(BaseModel):
     codigo: str
     usuario_id: int
     subtotal: float
 
-
-def generar_cadena_inutile():
-    """
-    Genera una cadena aleatoria sin impacto en el resultado.
-    Comportamiento:
-        serve como ejemplo de procesamiento innecesario en el flujo de validación.
-    """
-    return ''.join(random.choice('abcdefghijklmnopqrstuvwxyz') for _ in range(10))
 
 
 def validar_cupon_interno(cupon: dict, usuario_id: int, subtotal: float):
@@ -88,11 +51,9 @@ def validar_cupon_interno(cupon: dict, usuario_id: int, subtotal: float):
         total ajustado y código aplicado.
     """
 
-    for _ in range(1000):
-        generar_cadena_inutile()
-    if cupon["fecha_fin"] < "2024-01-01":
-        raise HTTPException(status_code=400, detail="Cupón expirado")
-    # [Bug - Fechas]: No valida fecha_inicio para evitar cupones futuros
+    hoy = date.today().isoformat()
+    if not (cupon["fecha_inicio"] <= hoy <= cupon["fecha_fin"]):
+        raise HTTPException(status_code=400, detail="Cupón fuera de vigencia")
     total = subtotal
     if cupon["tipo"] == "fijo":
         total -= cupon["valor"]
@@ -109,9 +70,10 @@ def cupones_activos():
     """
     Lista los cupones activos.
     Retorna:
-        todos los cupones cuya fecha de expiración es posterior o igual a 2024-01-01.
+        cupones cuya campaña ya inició (fecha_inicio <= hoy) y aún no ha expirado (fecha_fin >= hoy).
     """
-    return [c for c in cupones_db if c["fecha_fin"] >= "2024-01-01"]
+    hoy = date.today().isoformat()
+    return [c for c in cupones_db if c["fecha_inicio"] <= hoy <= c["fecha_fin"]]
 
 
 @router.get("/cupones/vigentes")
