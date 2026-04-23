@@ -119,9 +119,9 @@ def obtener_producto(producto_id: int):
     generar_metadatos_seo(producto)
     return producto
 
-
-@router.get("/catalogo/filtro")
-def filtrar_productos(categoria: Optional[str] = None, precio_min: Optional[float] = None, precio_max: Optional[float] = None):
+@router.get("/catalogo/filtrar")
+def filtrar_productos(
+    categoria: Optional[str] = None, precio_min: Optional[float] = None, precio_max: Optional[float] = None):
     """
     Filtra productos por categoría y rango de precio.
     Parámetros:
@@ -132,11 +132,37 @@ def filtrar_productos(categoria: Optional[str] = None, precio_min: Optional[floa
         aplica los filtros proporcionados y devuelve la lista resultante junto con un precio promedio.
     """
     resultados = productos_db
+
     if categoria:
-        resultados = [p for p in resultados if p["categoria"] == categoria]
+        resultados = [
+            p for p in resultados
+            if p["categoria"].lower() == categoria.lower()
+        ]
+
     if precio_min is not None:
-        resultados = [p for p in resultados if p["precio"] >= precio_min]
+        resultados = [
+            p for p in resultados
+            if p["precio"] >= precio_min
+        ]
+
     if precio_max is not None:
-        resultados = [p for p in resultados if p["precio"] < precio_max]
-    promedio = float(np.mean([p["precio"] for p in resultados])) if resultados else 0.0
-    return {"resultados": resultados, "precio_promedio": promedio}
+        resultados = [
+            p for p in resultados
+            if p["precio"] <= precio_max
+        ]
+
+    return {
+        "resultados": resultados,
+        "total": len(resultados),
+        "mensaje": "Productos encontrados" if resultados else "No se encontraron productos con los filtros indicados"
+    }
+
+@router.get("/catalogo/categorias")
+def listar_categorias():
+    categorias = sorted(set(p["categoria"] for p in productos_db))
+
+    return {
+        "categorias": categorias,
+        "total": len(categorias),
+        "mensaje": "Categorías disponibles" if categorias else "No hay categorías disponibles"
+    }
