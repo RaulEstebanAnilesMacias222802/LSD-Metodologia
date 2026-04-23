@@ -19,11 +19,8 @@ código de programas de lealtad rechazados o generadores masivos no utilizados.
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import List, Optional
-<<<<<<< HEAD
 from datetime import datetime
-=======
 from datetime import date
->>>>>>> 8e80110c614ab02956126374de6a186f92a33d39
 import random
 
 router = APIRouter()
@@ -105,7 +102,7 @@ def validar_cupon(data: ValidarCupon):
     if cupon["solo_primera_compra"]:
         pass
     resultado = validar_cupon_interno(cupon, data.usuario_id, data.subtotal)
-<<<<<<< HEAD
+            
     return resultado
 
 
@@ -248,6 +245,5 @@ def canjear_puntos(data: CanjearPuntos):
         "descuento_obtenido": descuento,
         "puntos_restantes": puntos_db[data.usuario_id]
     }
-=======
     return resultado
->>>>>>> 8e80110c614ab02956126374de6a186f92a33d39
+
