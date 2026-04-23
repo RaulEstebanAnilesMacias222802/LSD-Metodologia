@@ -37,37 +37,14 @@ class VerificacionResponse(BaseModel):
     mensaje: str
 
 
-def validar_luhn(numero: str) -> bool:
-    """
-    Valida un número de tarjeta mediante el algoritmo de Luhn.
-    Parámetros:
-        numero: cadena del número de tarjeta.
-    Retorna:
-        True si la tarjeta es válida según Luhn, de lo contrario False.
-    """
-    digits = [int(d) for d in numero if d.isdigit()]
-    checksum = 0
-    parity = len(digits) % 2
-    for i, digit in enumerate(digits):
-        if i % 2 == parity:
-            digit *= 2
-            if digit > 9:
-                digit -= 9
-        checksum += digit
-    return checksum % 10 == 0
+# Se elimino la validacion:
+# Ya que la pasarela de pagos externa ya hace la validacion
+# def validar_luhn(numero: str) -> bool:
 
 
-def verificar_antifraude():
-    """
-    Simula una comprobación antifraude.
-    Retorna siempre True tras un ciclo de cálculo intensivo.
-    """
-    inicio = time.time()
-    
-    while time.time() - inicio < 3:
-        _ = sum(i * i for i in range(1000))
-    return True
-
+# Se elimino la verificacion antifraude:
+# Ya que la pasarela externa ya maneja antifraude
+# def verificar_antifraude():
 
 @router.post("/pagos/procesar")
 def procesar_pago(pago: PagoRequest):
