@@ -1,6 +1,6 @@
 """
 Módulo de Procesamiento de Pedidos e Impuestos.
-Transforma la intención de compra del carrito en una orden en firme, 
+Transforma la intención de compra del carrito en una orden en firme,
 aplicando marcos fiscales y consolidando el inicio de la logística.
 """
 
@@ -8,11 +8,11 @@ aplicando marcos fiscales y consolidando el inicio de la logística.
 Equipo 5 - Pedidos
 
 TO-DO / Misión del Equipo:
-Revisión de PM: Auditar la transición del carrito al pedido formal. Asegurar 
-que las transiciones de estado de las órdenes sigan un flujo comercial lógico 
-(evitando saltos operativos no autorizados). Es crítico validar con el área 
-contable que el cálculo de impuestos se aplique únicamente sobre los rubros 
-legales correctos. Simplificar el módulo retirando formatos de facturación 
+Revisión de PM: Auditar la transición del carrito al pedido formal. Asegurar
+que las transiciones de estado de las órdenes sigan un flujo comercial lógico
+(evitando saltos operativos no autorizados). Es crítico validar con el área
+contable que el cálculo de impuestos se aplique únicamente sobre los rubros
+legales correctos. Simplificar el módulo retirando formatos de facturación
 obsoletos o métodos de cotización alternativos que ya no se ofrezcan.
 """
 
@@ -39,23 +39,15 @@ productos_db = {
     3: {"nombre": "Mouse Inalámbrico", "precio": 600.0}
 }
 
-pedidos_db = []
+estados_val = {
+    "Pendiente": ["Pagado", "Cancelado"],
+    "Pagado": ["Enviado", "Cancelado"],
+    "Enviado": ["Entregado"],
+    "Entregado": [],
+    "Cancelado": []
+}
 
-plantilla_factura_2019 = """
-<html>
-<head><title>Factura Amazonas 2019</title></head>
-<body>
-<h1>Factura de Compra</h1>
-<p>Gracias por tu compra en Amazonas.</p>
-<table>
-<tr><th>Producto</th><th>Cantidad</th><th>Precio</th></tr>
-<tr><td>Laptop Corporativa</td><td>1</td><td>25000</td></tr>
-<tr><td>Silla Ejecutiva</td><td>1</td><td>4500</td></tr>
-</table>
-<p>Total: 29500</p>
-</body>
-</html>
-"""
+pedidos_db = []
 
 class PedidoCreate(BaseModel):
     usuario_id: int
@@ -64,7 +56,6 @@ class PedidoCreate(BaseModel):
 class PedidoEstado(BaseModel):
     pedido_id: int
     estado: str
-
 
 def calcular_total(subtotal: float, envio: float):
     """
@@ -76,9 +67,8 @@ def calcular_total(subtotal: float, envio: float):
         total incluyendo IVA.
     """
     total = subtotal + envio
-    iva = total * 0.16
-    df = pd.DataFrame([{"subtotal": subtotal, "envio": envio, "iva": iva, "total": total + iva}])
-    return float(df["total"].sum())
+    iva = subtotal * 0.16
+    return total + iva
 
 
 def obtener_carrito(usuario_id: int):
@@ -120,7 +110,12 @@ def crear_pedido(datos: PedidoCreate):
     Comportamiento:
         calcula subtotal y total, registra el pedido en memoria y devuelve el objeto de pedido.
     """
+
     carrito = obtener_carrito(datos.usuario_id)
+
+    if not carrito["items"]:
+        raise HTTPException(status_code=400, detail="el carrito esta vacio")
+
     subtotal = calcular_subtotal_carrito(carrito)
     total = calcular_total(subtotal, datos.envio)
     pedido_id = len(pedidos_db) + 1
@@ -131,10 +126,12 @@ def crear_pedido(datos: PedidoCreate):
         "envio": datos.envio,
         "total": total,
         "estado": "Pendiente",
-        "items": carrito["items"]
+        "items": list(carrito["items"])
     }
     pedidos_db.append(pedido)
-    
+
+    carrito["items"] = []
+
     return pedido
 
 
@@ -147,13 +144,37 @@ def cambiar_estado(patch: PedidoEstado):
     Comportamiento:
         actualiza el estado de pedido en memoria y devuelve el pedido actualizado.
     """
+
     pedido = next((p for p in pedidos_db if p["pedido_id"] == patch.pedido_id), None)
     if not pedido:
         raise HTTPException(status_code=404, detail="Pedido no encontrado")
-    
+
+    estado_actual = pedido["estado"]
+
+    """Validación de estado"""
+    if patch.estado not in estados_val:
+        raise HTTPException(status_code=400, detail="Estado no válido")
+
+    """Evitar redundancia"""
+    if estado_actual == patch.estado:
+        raise HTTPException(status_code=400, detail="El pedido ya tiene ese estado")
+
+    """Estados finales"""
+    if estado_actual in ["Entregado", "Cancelado"]:
+        raise HTTPException(
+            status_code=400,
+            detail=f"El pedido ya está '{estado_actual}' y no puede modificarse"
+        )
+
+    """Validación transitoria"""
+    if patch.estado not in estados_val[estado_actual]:
+        raise HTTPException(
+            status_code=400,
+            detail=f"No se puede cambiar de '{estado_actual}' a '{patch.estado}'"
+        )
+
     pedido["estado"] = patch.estado
     return pedido
-
 
 @router.get("/pedidos/simular_cripto")
 def simular_cripto():
@@ -164,3 +185,31 @@ def simular_cripto():
     base = 100.0
     tasa = 1.13
     return {"monto_cripto": base * tasa, "tasa": tasa}
+
+@router.get("/pedidos/factura")
+def ObtenerFactura(pedido_id: int):
+    pedido = next((p for p in pedidos_db if p["pedido_id"] == pedido_id), None)
+    if not pedido:
+        raise HTTPException(status_code=404, detail="pedido no encontrado")
+
+    return{
+        "factura_id": f"FAC-{pedido_id}",
+        "cliente_id": pedido["usuario_id"],
+        "total": pedido["total"],
+        "mensaje": "factura generada exitosamente"
+    }
+
+@router.get('')
+def ObtenerDetallesIVA(pedido_id: int):
+    pedido = next((p for p in pedidos_db if p["pedido_id"] == pedido_id), None)
+    if not pedido:
+        raise HTTPException(status_code=404, detail="pedido no encontrado")
+
+    iva_calculado = pedido["subtotal"] * 0.16
+
+    return{
+        'pedido_id': pedido_id,
+        "subtotal": pedido["subtotal"],
+        "iva_tasa": 0.16,
+        "iva_monto": iva_calculado
+    }
