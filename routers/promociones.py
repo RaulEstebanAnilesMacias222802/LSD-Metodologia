@@ -20,6 +20,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import List, Optional
 import random
+from datetime import date
 
 router = APIRouter()
 
@@ -63,7 +64,6 @@ usos_cupones = []
 """
 
 class ValidarCupon(BaseModel):
-    codigo: str
     usuario_id: int
     subtotal: float
 
@@ -103,7 +103,9 @@ def validar_cupon_interno(cupon: dict, usuario_id: int, subtotal: float):
     usos_cupones.append({"usuario_id": usuario_id, "codigo": cupon["codigo"]})
     return {"total": total, "aplicado": cupon["codigo"]}
 
-
+@router.get("/cupones")
+def listar_cupones():
+    return cupones_db
 @router.get("/cupones/activos")
 def cupones_activos():
     """
@@ -114,18 +116,8 @@ def cupones_activos():
     return [c for c in cupones_db if c["fecha_fin"] >= "2024-01-01"]
 
 
-@router.get("/cupones/vigentes")
-def cupones_vigentes():
-    """
-    Lista los cupones vigentes.
-    Comportamiento:
-        ofrece la misma respuesta que cupones_activos para el ejemplo de endpoints redundantes.
-    """
-    return [c for c in cupones_db if c["fecha_fin"] >= "2024-01-01"]
-
-
-@router.post("/cupones/validar")
-def validar_cupon(data: ValidarCupon):
+@router.post("/cupones/validar/{codigo}")
+def validar_cupon(codigo: str, data: ValidarCupon):
     """
     Valida un cupón para aplicar un descuento.
     Parámetros:
@@ -133,10 +125,19 @@ def validar_cupon(data: ValidarCupon):
     Comportamiento:
         busca el cupón, aplica las reglas definidas y retorna el total ajustado.
     """
-    cupon = next((c for c in cupones_db if c["codigo"] == data.codigo), None)
+    cupon = next((c for c in cupones_db if c["codigo"] == codigo), None)
     if not cupon:
         raise HTTPException(status_code=404, detail="Cupón no encontrado")
+    
     if cupon["solo_primera_compra"]:
-        pass
+        ya_usado = any(
+            u["usuario_id"] == data.usuario_id and u["codigo"] == cupon["codigo"]
+            for u in usos_cupones
+        )
+        if ya_usado:
+            raise HTTPException(status_code=400, detail="Este cupón solo puede usarse en la primera compra")
+
     resultado = validar_cupon_interno(cupon, data.usuario_id, data.subtotal)
+    if resultado["total"] < 0:
+        resultado["total"] = 0.0
     return resultado
