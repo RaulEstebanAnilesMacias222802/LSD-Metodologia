@@ -20,8 +20,8 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from typing import List, Optional
 from datetime import datetime
-import random
 from datetime import date
+import random
 
 router = APIRouter()
 
