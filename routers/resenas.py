@@ -17,7 +17,6 @@ el módulo de motores de análisis complejos o formatos de reporte antiguos que
 el dashboard actual no soporta.
 """
 
-from fastapi import responses
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 import re
@@ -101,38 +100,6 @@ def _usuario_ya_reseno_producto(usuario_id: int, producto_id: int) -> bool:
         for resena in resenas_db
     )
 
-
-def generar_reporte_html(resenas: list):
-    """
-    Genera un reporte HTML simple con reseñas.
-    Parámetros:
-        resenas: lista de reseñas.
-    Retorna:
-        cadena HTML con tabla de reseñas.
-    """
-    html = "<html><body><h1>Reporte de Reseñas</h1><table>"
-    html += "<tr><th>Producto</th><th>Usuario</th><th>Estrellas</th></tr>"
-    for r in resenas:
-        html += f"<tr><td>{r['producto_id']}</td><td>{r['usuario_id']}</td><td>{r['estrellas']}</td></tr>"
-    html += "</table></body></html>"
-    return html
-
-
-def generar_reporte_html_detallado(resenas: list):
-    """
-    Genera un reporte HTML detallado de reseñas.
-    Parámetros:
-        resenas: lista de reseñas.
-    Retorna:
-        cadena HTML con detalles por reseña.
-    """
-    report = "<div>"
-    for r in resenas:
-        report += f"<p>{r['usuario_id']} - {r['producto_id']} - {r['estrellas']}</p>"
-    report += "</div>"
-    return report
-
-
 def _upvote_resena(resena_id: int):
     """
     Marca un upvote en una reseña.
@@ -163,16 +130,9 @@ def _downvote_resena(resena_id: int):
     raise HTTPException(status_code=404, detail="Reseña no encontrada")
 
 
-def _calcular_reputacion_usuario(usuario_id: int):
-    """
-    Calcula la reputación de un usuario basada en reseñas.
-    Parámetros:
-        usuario_id: identificador del usuario.
-    """
-    pass
 
 
-@router.post("/resenas/crear")
+@router.post("/crear")
 def crear_resena(data: ResenaCreate):
     """
     Crea una reseña de producto.
@@ -205,7 +165,7 @@ def crear_resena(data: ResenaCreate):
     return resena
 
 
-@router.get("/resenas/producto/{producto_id}")
+@router.get("/producto/{producto_id}")
 def obtener_resenas_producto(producto_id: int):
     """
     Obtiene las reseñas registradas para un producto.
@@ -222,7 +182,7 @@ def obtener_resenas_producto(producto_id: int):
     }
 
 
-@router.get("/resenas/producto/{producto_id}/promedio")
+@router.get("/producto/{producto_id}/promedio")
 def promedio_producto(producto_id: int):
     """
     Calcula el promedio de calificaciones de un producto.
@@ -283,7 +243,7 @@ def reporte_productos_mas_vendidos():
         "productos": ordenados[:5]
     }
 
-@router.post("/{resena_id}/actualizar")
+@router.put("/{resena_id}")
 def actualizar_resena(resena_id: int, newData: ResenaCreate):
     """
     Actualiza una reseña
@@ -295,7 +255,7 @@ def actualizar_resena(resena_id: int, newData: ResenaCreate):
             return resena
     raise HTTPException(status_code=404, detail="Reseña no encontrada")
 
-@router.delete("/{resena_id}/eliminar")
+@router.delete("/{resena_id}")
 def eliminar_resena(resena_id: int):
     """
     Elimina una reseña
