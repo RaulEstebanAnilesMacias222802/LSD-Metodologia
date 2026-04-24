@@ -17,6 +17,7 @@ el módulo de motores de análisis complejos o formatos de reporte antiguos que
 el dashboard actual no soporta.
 """
 
+from fastapi import responses
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 import re
@@ -281,3 +282,27 @@ def reporte_productos_mas_vendidos():
         "total_productos": len(ordenados[:5]),
         "productos": ordenados[:5]
     }
+
+@router.post("/{resena_id}/actualizar")
+def actualizar_resena(resena_id: int, newData: ResenaCreate):
+    """
+    Actualiza una reseña
+    """
+    for resena in resenas_db:
+        if resena["resena_id"] == resena_id:
+            resena["estrellas"] = newData.estrellas
+            resena["comentario"] = newData.comentario
+            return resena
+    raise HTTPException(status_code=404, detail="Reseña no encontrada")
+
+@router.delete("/{resena_id}/eliminar")
+def eliminar_resena(resena_id: int):
+    """
+    Elimina una reseña
+    """
+    for resena in resenas_db:
+        if resena["resena_id"] == resena_id:
+            resenas_db.remove(resena)
+            return {"mensaje": "Reseña eliminada exitosamente"}
+    raise HTTPException(status_code=404, detail="Reseña no encontrada")
+
