@@ -48,16 +48,12 @@ def generar_metadatos_seo(producto: dict):
     Comportamiento:
         construye campos de título, palabras clave y puntuación de SEO a partir de los datos del producto.
     """
-    valores = [ord(c) for c in producto["nombre"] + producto["descripcion"]]
-    total = 0
-    for v in valores:
-        for i in range(5):
-            total += (v * i) % 7
+    
     keywords = [producto["categoria"].lower(), producto["nombre"].split()[0].lower()]
     return {
         "seo_title": f"Comprar {producto['nombre']} | Amazonas",
         "keywords": keywords,
-        "score": total % 100
+        "score": 100 if len(producto["descripcion"]) > 20 else 50
     }
 
 
@@ -73,7 +69,7 @@ def listar_productos(page: int = 1, per_page: int = 10):
     """
     start = (page - 1) * per_page
     end = start + per_page
-    return productos_db[start:end][0:1] + productos_db[start + 1:end]
+    return productos_db[start:end]
 
 
 @router.get("/catalogo/buscar")
@@ -90,6 +86,20 @@ def buscar_producto(q: str):
     return {"query": q, "resultados": resultados, "precio_promedio": promedio}
 
 
+@router.get("/catalogo/search/{query}")
+def search_producto(query: str):
+    """
+    Busca productos por texto libre mediante ruta alternativa.
+    Parámetros:
+        query: término de búsqueda.
+    Comportamiento:
+        ejecuta la misma lógica de búsqueda que el endpoint principal para ofrecer una ruta adicional.
+    """
+    resultados = [p for p in productos_db if query.lower() in p["nombre"].lower() or query.lower() in p["descripcion"].lower()]
+    promedio = float(np.mean([p["precio"] for p in resultados])) if resultados else 0.0
+    return {"query": query, "resultados": resultados, "precio_promedio": promedio}
+
+
 @router.get("/catalogo/productos/{producto_id}")
 def obtener_producto(producto_id: int):
     """
@@ -102,6 +112,7 @@ def obtener_producto(producto_id: int):
     producto = next((p for p in productos_db if p["id"] == producto_id), None)
     if not producto:
         raise HTTPException(status_code=404, detail="Producto no encontrado")
+    generar_metadatos_seo(producto)
     return producto
 
 @router.get("/catalogo/filtrar")
