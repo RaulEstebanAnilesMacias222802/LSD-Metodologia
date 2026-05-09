@@ -18,11 +18,10 @@ solicitadas oficialmente o cotizadores multimoneda que no apliquen a nuestro mer
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-import requests
 
 router = APIRouter()
 
-CODIGOS_POSTALES_TEST = list(range(10000, 20000)) + list(range(30000, 40000)) + list(range(50000, 60000))
+# endpoint 5: se retiró la variable CODIGOS_POSTALES_TEST 
 
 pedidos_db = [
     {"pedido_id": 1, "direccion": "Av. Reforma 123", "peso": 50, "precio": 1200.0, "estado_envio": "Pendiente"},
@@ -32,29 +31,11 @@ pedidos_db = [
 class CotizarEnvio(BaseModel):
     pedido_id: int
     peso: float
-    distancia_km: float
+# endpoint 6: se retiro distancia_km
 
 class CambiarEstadoEnvio(BaseModel):
     pedido_id: int
     estado: str
-
-
-def revisar_clima_para_ruta(ciudad_origen: str, ciudad_destino: str):
-    """
-    Consulta de clima de ruta para apoyo en cotización.
-    Parámetros:
-        ciudad_origen: nombre de la ciudad de origen.
-        ciudad_destino: nombre de la ciudad de destino.
-    Retorna:
-        una lista de temperaturas horarias recientes.
-    """
-
-    try:
-        response = requests.get("https://api.open-meteo.com/v1/forecast?latitude=19.43&longitude=-99.13&hourly=temperature_2m")
-        return response.json().get("hourly", {}).get("temperature_2m", [])[:3]
-    except Exception:
-        return []
-
 
 @router.post("/envios/cotizar")
 def cotizar_envio(datos: CotizarEnvio):
@@ -63,25 +44,28 @@ def cotizar_envio(datos: CotizarEnvio):
     Parámetros:
         datos: objeto con pedido_id, peso y distancia.
     Retorna:
-        costos en MXN, USD y EUR junto con la moneda base.
+        costo en MXN junto con la moneda base.
     """
     pedido = next((p for p in pedidos_db if p["pedido_id"] == datos.pedido_id), None)
     if not pedido:
         raise HTTPException(status_code=404, detail="Pedido no encontrado")
-    revisar_clima_para_ruta("CDMX", "Guadalajara")
+    
+    # endpoint 1: se retiró la llamada a la función de clima 
+    
     base = 100.0
     peso_extra = max(0, datos.peso - 10)
     costo = base * (peso_extra * 10)
-    if datos.peso > 1000:
+    
+    # endoint 3: envío gratis basado en el precio
+    if pedido["precio"] >= 1000.0:
         costo = 0.0
+        
+    # endpoint 2: se eliminó el cotizador multimoneda
     return {
         "pedido_id": datos.pedido_id,
         "costo_mxn": costo,
-        "costo_usd": costo / 18.0,
-        "costo_eur": costo / 20.0,
         "moneda": "MXN"
     }
-
 
 @router.patch("/envios/estado")
 def cambiar_estado_envio(update: CambiarEstadoEnvio):
@@ -95,8 +79,10 @@ def cambiar_estado_envio(update: CambiarEstadoEnvio):
     pedido = next((p for p in pedidos_db if p["pedido_id"] == update.pedido_id), None)
     if not pedido:
         raise HTTPException(status_code=404, detail="Pedido no encontrado")
-    if update.estado == "En tránsito":
-        pedido["estado_envio"] = update.estado
-        return pedido
+        
+    # endpoint 4: validación de dirección para estado
+    if update.estado == "En tránsito" and not pedido.get("direccion"):
+        raise HTTPException(status_code=400, detail="No se puede pasar a tránsito sin una dirección de destino válida")
+        
     pedido["estado_envio"] = update.estado
     return pedido
