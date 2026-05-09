@@ -19,17 +19,23 @@ la experiencia del cliente.
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-import hashlib
-import time
+from datetime import datetime
 
 router = APIRouter()
 
 pagos_db = []
 
+# Simulación de órdenes (para validar el monto real)
+ordenes_db = {
+    1: 500.0,
+    2: 1200.0,
+    3: 250.0
+}
+
 class PagoRequest(BaseModel):
     order_id: int
     tarjeta_numero: str
-    tarjeta_expiracion: str
+    tarjeta_expiracion: str  # formato MM/YY
     monto_pagado: float
 
 class VerificacionResponse(BaseModel):
@@ -37,72 +43,65 @@ class VerificacionResponse(BaseModel):
     mensaje: str
 
 
-def validar_luhn(numero: str) -> bool:
+def tarjeta_vigente(expiracion: str) -> bool:
     """
-    Valida un número de tarjeta mediante el algoritmo de Luhn.
-    Parámetros:
-        numero: cadena del número de tarjeta.
-    Retorna:
-        True si la tarjeta es válida según Luhn, de lo contrario False.
+    Verifica si la tarjeta no está vencida usando el año actual.
     """
-    digits = [int(d) for d in numero if d.isdigit()]
-    checksum = 0
-    parity = len(digits) % 2
-    for i, digit in enumerate(digits):
-        if i % 2 == parity:
-            digit *= 2
-            if digit > 9:
-                digit -= 9
-        checksum += digit
-    return checksum % 10 == 0
+    try:
+        mes, anio = expiracion.split("/")
+        mes = int(mes)
+        anio = int("20" + anio)
 
-
-def verificar_antifraude():
-    """
-    Simula una comprobación antifraude.
-    Retorna siempre True tras un ciclo de cálculo intensivo.
-    """
-    inicio = time.time()
-    
-    while time.time() - inicio < 3:
-        _ = sum(i * i for i in range(1000))
-    return True
+        ahora = datetime.now()
+        return (anio > ahora.year) or (anio == ahora.year and mes >= ahora.month)
+    except:
+        return False
 
 
 @router.post("/pagos/procesar")
 def procesar_pago(pago: PagoRequest):
-    """
-    Procesa un pago de orden.
-    Parámetros:
-        pago: objeto con order_id, tarjeta, expiración y monto.
-    Comportamiento:
-        valida la tarjeta, ejecuta la verificación antifraude y retorna el resultado del pago.
-    """
-    if not validar_luhn(pago.tarjeta_numero):
-        raise HTTPException(status_code=400, detail="Número de tarjeta inválido")
     
-    if pago.tarjeta_expiracion and pago.tarjeta_expiracion.endswith("/21"):
-        pass
-    verificar_antifraude()
+    if pago.order_id not in ordenes_db:
+        raise HTTPException(status_code=404, detail="Orden no encontrada")
+
+    monto_esperado = ordenes_db[pago.order_id]
+
+    if pago.monto_pagado != monto_esperado:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Monto incorrecto. Esperado: {monto_esperado}"
+        )
+
+    if not tarjeta_vigente(pago.tarjeta_expiracion):
+        raise HTTPException(
+            status_code=400,
+            detail="Tarjeta vencida"
+        )
+
+
     aprobado = True
-    if pago.monto_pagado < 0:
-        aprobado = False
+
     pago_registro = {
         "order_id": pago.order_id,
         "tarjeta": pago.tarjeta_numero[-4:],
         "monto_pagado": pago.monto_pagado,
-        "estado": "Pagado" if aprobado else "Rechazado"
+        "estado": "Pagado"
     }
+
     pagos_db.append(pago_registro)
-    return {"aprobado": aprobado, "estado": pago_registro["estado"], "orden": pago_registro}
+
+    return {
+        "aprobado": aprobado,
+        "estado": pago_registro["estado"],
+        "orden": pago_registro
+    }
 
 
 @router.get("/pagos/reembolsos")
 def reembolsos():
     """
-    Endpoint de reembolsos pendiente de implementación.
-    Comportamiento:
-        actualmente definido como placeholder sin lógica de negocio.
+    Devuelve pagos que podrían ser reembolsados.
     """
-    
-    pass
+    return {
+        "reembolsos_disponibles": pagos_db
+    }
